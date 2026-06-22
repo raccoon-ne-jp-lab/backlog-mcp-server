@@ -31,12 +31,12 @@
   // MCP_SERVER_BASE_URL must match the deployed Worker's public origin and is
   // required to enable the OAuth authorization-server routes.
   "vars": {
-    "MCP_SERVER_BASE_URL": "https://backlog-mcp-server.example.workers.dev",
-    "BACKLOG_DOMAIN": "your-space.backlog.com",
+    "MCP_SERVER_BASE_URL": "https://backlog-mcp-server.raccoon-ne-jp.workers.dev",
+    "BACKLOG_DOMAIN": "raccoon-a.backlog.jp",
     "MCP_HTTP_PATH": "/mcp",
     "ENABLE_TOOLSETS": "all",
-    "LOG_LEVEL": "info"
-    // "BACKLOG_OAUTH_CLIENT_ID": set here or as a secret
+    "LOG_LEVEL": "info",
+    "BACKLOG_OAUTH_CLIENT_ID": "DAsd7ESsXekwbi1JVQuUPwZ9rKpKYFyf"
     // "MCP_HTTP_ALLOWED_HOSTS": "backlog-mcp-server.example.workers.dev"
     // "ENABLE_DYNAMIC_TOOLSETS": "false"
     // "OPTIMIZE_RESPONSE": "false"
