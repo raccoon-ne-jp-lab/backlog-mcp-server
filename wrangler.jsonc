@@ -31,7 +31,7 @@
   // MCP_SERVER_BASE_URL must match the deployed Worker's public origin and is
   // required to enable the OAuth authorization-server routes.
   "vars": {
-    "MCP_SERVER_BASE_URL": "https://backlog-mcp-server.raccoon-ne-jp.workers.dev",
+    "MCP_SERVER_BASE_URL": "https://backlog-mcp.rac-cf.com",
     "BACKLOG_DOMAIN": "raccoon-a.backlog.jp",
     "MCP_HTTP_PATH": "/mcp",
     "ENABLE_TOOLSETS": "all",
