@@ -6,10 +6,14 @@ import { randomUUID } from 'node:crypto';
 import type { AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
-import { Hono } from 'hono';
+import { type Context, Hono } from 'hono';
 import { runWithAccessToken } from './auth/backlogAuthContext.js';
 import type { BacklogOAuthConfig } from './auth/backlogOAuthConfig.js';
 import type { TokenStore } from './auth/tokenStore.js';
+import {
+  BACKLOG_FAVICON_CONTENT_TYPE,
+  BACKLOG_FAVICON_SVG,
+} from './favicon.js';
 import { logger } from './utils/logger.js';
 import type { BacklogMCPServer } from './utils/wrapServerWithToolRegistry.js';
 
@@ -51,6 +55,15 @@ const jsonRpcError = (code: number, message: string): JsonRpcErrorBody => {
 
 const bodyContainsInitialize = (body: unknown): boolean => {
   return (Array.isArray(body) ? body : [body]).some(isInitializeRequest);
+};
+
+/**
+ * Responds with the Backlog favicon SVG and a long-lived cache header.
+ */
+const serveFavicon = (c: Context): Response => {
+  c.header('Content-Type', BACKLOG_FAVICON_CONTENT_TYPE);
+  c.header('Cache-Control', 'public, max-age=86400');
+  return c.body(BACKLOG_FAVICON_SVG);
 };
 
 const parseHostname = (hostHeader: string): string | null => {
@@ -140,6 +153,12 @@ export const createMcpHonoApp = async (
   app.get('/health', (c) =>
     c.json({ status: 'healthy', timestamp: new Date().toISOString(), version })
   );
+
+  // Serve the Backlog favicon for browser requests that hit the server during
+  // the OAuth flow. Both paths return the same SVG; modern browsers honor the
+  // Content-Type over the `.ico` extension.
+  app.get('/favicon.ico', (c) => serveFavicon(c));
+  app.get('/favicon.svg', (c) => serveFavicon(c));
 
   if (oauthEnabled) {
     const { createOAuthRoutes } = await import('./auth/oauthRoutes.js');
