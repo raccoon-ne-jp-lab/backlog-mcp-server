@@ -49,6 +49,10 @@ export function createBearerAuthMiddleware(
 
     const tokenEntry = store.getMcpToken(mcpToken);
     if (!tokenEntry) {
+      logger.info(
+        {},
+        'MCP access token unknown or expired; client should refresh'
+      );
       c.header(
         'WWW-Authenticate',
         `Bearer error="invalid_token", error_description="Unknown or expired token", resource_metadata="${resourceMetadataUrl}"`

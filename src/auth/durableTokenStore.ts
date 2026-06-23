@@ -83,6 +83,20 @@ export async function createDurableTokenStore(
     { authInfo: AuthInfo; expiresAt: number }
   >();
 
+  // Diagnostic: surfaces whether OAuth state actually survives Durable Object
+  // eviction. If these counts are 0 right after tokens were issued, persistence
+  // is not durable across re-initialization.
+  logger.info(
+    {
+      clients: clients.size,
+      pendingAuth: pendingAuthorizations.size,
+      authCodes: authorizationCodes.size,
+      mcpTokens: mcpAccessTokens.size,
+      mcpRefreshTokens: mcpRefreshTokens.size,
+    },
+    'Token store rehydrated from Durable Object storage'
+  );
+
   const evictOldestClient = (): void => {
     const now = Math.floor(Date.now() / 1000);
     for (const [id, client] of clients) {

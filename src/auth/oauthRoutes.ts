@@ -438,8 +438,14 @@ export function createOAuthRoutes(
         );
       }
 
+      logger.info({ clientId }, 'Token refresh requested');
+
       const refreshEntry = store.consumeMcpRefreshToken(refreshToken);
       if (!refreshEntry) {
+        logger.warn(
+          { clientId },
+          'Refresh token not found in store (unknown or expired)'
+        );
         return c.json(
           oauthError('invalid_grant', 'Invalid or expired refresh token'),
           400
@@ -447,6 +453,10 @@ export function createOAuthRoutes(
       }
 
       if (refreshEntry.clientId !== clientId) {
+        logger.warn(
+          { clientId, issuedTo: refreshEntry.clientId },
+          'Refresh token client mismatch'
+        );
         return c.json(
           oauthError(
             'invalid_grant',
@@ -461,6 +471,7 @@ export function createOAuthRoutes(
           config,
           refreshEntry.backlogRefreshToken
         );
+        logger.info({ clientId }, 'Backlog token refresh succeeded');
 
         const mcpAccessToken = randomBytes(32).toString('hex');
         const mcpRefreshToken = randomBytes(32).toString('hex');

@@ -4,6 +4,12 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "backlog-mcp-server",
   "main": "src/worker.ts",
+  // Do not expose the worker on *.workers.dev — it is served only via the
+  // custom domain (backlog-mcp.rac-cf.com). `workers_dev` disables the
+  // production workers.dev route; `preview_urls` disables the versioned
+  // preview URLs, which are also workers.dev based.
+  "workers_dev": false,
+  "preview_urls": false,
   "compatibility_date": "2026-06-21",
   // nodejs_compat is required for node:crypto (randomUUID/randomBytes/createHash)
   // and node:async_hooks (AsyncLocalStorage used to scope the access token).
