@@ -36,10 +36,12 @@
     "MCP_HTTP_PATH": "/mcp",
     "ENABLE_TOOLSETS": "all",
     "LOG_LEVEL": "info",
-    "BACKLOG_OAUTH_CLIENT_ID": "DAsd7ESsXekwbi1JVQuUPwZ9rKpKYFyf"
+    "BACKLOG_OAUTH_CLIENT_ID": "DAsd7ESsXekwbi1JVQuUPwZ9rKpKYFyf",
+    // Enables field selection (equivalent to the stdio CLI's `--optimize-response`)
+    // so tool responses can be trimmed to reduce token usage.
+    "OPTIMIZE_RESPONSE": "true"
     // "MCP_HTTP_ALLOWED_HOSTS": "backlog-mcp-server.example.workers.dev"
     // "ENABLE_DYNAMIC_TOOLSETS": "false"
-    // "OPTIMIZE_RESPONSE": "false"
     // "MAX_TOKENS": "50000"
     // "PREFIX": ""
   }
