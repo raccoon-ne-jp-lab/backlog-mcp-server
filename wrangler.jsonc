@@ -46,6 +46,11 @@
     // Enables field selection (equivalent to the stdio CLI's `--optimize-response`)
     // so tool responses can be trimmed to reduce token usage.
     "OPTIMIZE_RESPONSE": "true"
+    // Stateless MCP serving is ON by default: the Durable Object's in-memory
+    // sessions do not survive hibernation, which would break tool discovery
+    // between a client's initialize and tools/list. Set to "false" only if the
+    // deployment can guarantee a long-lived instance.
+    // "MCP_HTTP_STATELESS": "true"
     // "MCP_HTTP_ALLOWED_HOSTS": "backlog-mcp-server.example.workers.dev"
     // "ENABLE_DYNAMIC_TOOLSETS": "false"
     // "MAX_TOKENS": "50000"

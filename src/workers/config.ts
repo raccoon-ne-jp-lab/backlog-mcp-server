@@ -17,6 +17,7 @@ export type ResolvedWorkerConfig = {
   enabledToolsets: string[];
   dynamicToolsets: boolean;
   enableJsonResponse: boolean;
+  stateless: boolean;
   allowedHosts?: string[];
 };
 
@@ -83,6 +84,9 @@ export function resolveWorkerConfig(env: WorkerVars): ResolvedWorkerConfig {
     enabledToolsets,
     dynamicToolsets,
     enableJsonResponse: bool(env, 'MCP_HTTP_JSON_RESPONSE', false),
+    // Default on: the Durable Object's in-memory sessions do not survive
+    // hibernation, so stateless serving is required for reliable tool discovery.
+    stateless: bool(env, 'MCP_HTTP_STATELESS', true),
     allowedHosts,
   };
 }

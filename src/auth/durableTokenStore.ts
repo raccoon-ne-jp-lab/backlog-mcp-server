@@ -175,8 +175,16 @@ export async function createDurableTokenStore(
 
     getMcpToken(mcpToken): McpTokenEntry | undefined {
       const entry = mcpAccessTokens.get(mcpToken);
-      if (!entry) return undefined;
+      if (!entry) {
+        // Diagnostic: token presented but not in the store at all.
+        logger.info({}, 'getMcpToken: access token not in store (unknown)');
+        return undefined;
+      }
       if (Date.now() > entry.expiresAt) {
+        logger.info(
+          { expiredForMs: Date.now() - entry.expiresAt },
+          'getMcpToken: access token found but expired'
+        );
         mcpAccessTokens.delete(mcpToken);
         persist(storage.delete(PREFIX.mcpToken + mcpToken));
         return undefined;

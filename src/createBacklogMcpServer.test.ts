@@ -148,6 +148,24 @@ describe('createBacklogMcpServer', () => {
     );
   });
 
+  it('advertises the Backlog icons and website to McpServer', () => {
+    createBacklogMcpServer(baseConfig);
+    const serverInfo = vi.mocked(McpServer).mock.calls[0][0];
+    expect(serverInfo.websiteUrl).toBe('https://backlog.com');
+    expect(serverInfo.icons).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          src: expect.stringMatching(/^data:image\/png;base64,/),
+          mimeType: 'image/png',
+        }),
+        expect.objectContaining({
+          src: expect.stringMatching(/^data:image\/svg\+xml,/),
+          mimeType: 'image/svg+xml',
+        }),
+      ])
+    );
+  });
+
   it('passes correct arguments to dynamicTools when dynamicToolsets is true', () => {
     const mockToolsetGroup = { toolsets: [] };
     const mockRegistrar = { register: vi.fn() };

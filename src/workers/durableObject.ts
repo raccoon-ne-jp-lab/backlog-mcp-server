@@ -107,6 +107,7 @@ export class BacklogMcpDurableObject {
       transports: this.transports,
       oauthConfig,
       tokenStore: this.tokenStore,
+      stateless: cfg.stateless,
     });
 
     const existingAlarm = await this.state.storage.getAlarm();
