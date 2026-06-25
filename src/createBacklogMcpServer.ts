@@ -3,6 +3,7 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Backlog } from 'backlog-js';
+import { BACKLOG_MCP_ICONS } from './favicon.js';
 import type { TranslationHelper } from './createTranslationHelper.js';
 import { registerDynamicTools, registerTools } from './registerTools.js';
 import { organizationTools } from './tools/dynamicTools/organizations.js';
@@ -46,6 +47,8 @@ export function createBacklogMcpServer({
       name: 'backlog',
       title: useFields ? 'backlog (field selection enabled)' : 'backlog',
       version,
+      websiteUrl: 'https://backlog.com',
+      icons: BACKLOG_MCP_ICONS,
     })
   );
 

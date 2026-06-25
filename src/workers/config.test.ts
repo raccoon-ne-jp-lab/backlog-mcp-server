@@ -22,7 +22,16 @@ describe('resolveWorkerConfig', () => {
     expect(config.enabledToolsets).toEqual(['all']);
     expect(config.dynamicToolsets).toBe(false);
     expect(config.enableJsonResponse).toBe(false);
+    expect(config.stateless).toBe(true);
     expect(config.allowedHosts).toBeUndefined();
+  });
+
+  it('MCP_HTTP_STATELESS=false でステートフルに切り替えられる', () => {
+    const config = resolveWorkerConfig(
+      envWith({ MCP_HTTP_STATELESS: 'false' })
+    );
+
+    expect(config.stateless).toBe(false);
   });
 
   it('各varを解釈して上書きする', () => {

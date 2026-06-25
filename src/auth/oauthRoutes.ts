@@ -17,6 +17,21 @@ const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const LOCALHOST_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
 const SUPPORTED_AUTH_METHODS = ['client_secret_post', 'none'];
 
+const DEFAULT_ACCESS_TOKEN_TTL_SEC = 3600;
+
+/**
+ * Normalizes the upstream `expires_in` (seconds) into a safe positive integer.
+ *
+ * Guards against a missing/zero/NaN value, which would otherwise make the MCP
+ * access token expire immediately (and be evicted on first read), forcing the
+ * client into an endless re-authentication loop.
+ */
+function normalizeExpiresIn(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0
+    ? value
+    : DEFAULT_ACCESS_TOKEN_TTL_SEC;
+}
+
 function verifyPkce(codeVerifier: string, codeChallenge: string): boolean {
   const hash = createHash('sha256').update(codeVerifier).digest('base64url');
   return hash === codeChallenge;
@@ -409,11 +424,12 @@ export function createOAuthRoutes(
 
       const mcpAccessToken = randomBytes(32).toString('hex');
       const mcpRefreshToken = randomBytes(32).toString('hex');
+      const expiresInSec = normalizeExpiresIn(entry.backlogTokens.expires_in);
 
       store.storeMcpToken(mcpAccessToken, {
         backlogAccessToken: entry.backlogTokens.access_token,
         clientId,
-        expiresAt: Date.now() + entry.backlogTokens.expires_in * 1000,
+        expiresAt: Date.now() + expiresInSec * 1000,
       });
       store.storeMcpRefreshToken(mcpRefreshToken, {
         backlogRefreshToken: entry.backlogTokens.refresh_token,
@@ -421,10 +437,19 @@ export function createOAuthRoutes(
         expiresAt: Date.now() + REFRESH_TOKEN_TTL_MS,
       });
 
+      logger.info(
+        {
+          clientId,
+          rawExpiresIn: entry.backlogTokens.expires_in,
+          expiresInSec,
+        },
+        'Issued MCP access token (authorization_code)'
+      );
+
       return c.json({
         access_token: mcpAccessToken,
         token_type: 'bearer',
-        expires_in: entry.backlogTokens.expires_in,
+        expires_in: expiresInSec,
         refresh_token: mcpRefreshToken,
       });
     }
@@ -438,8 +463,14 @@ export function createOAuthRoutes(
         );
       }
 
+      logger.info({ clientId }, 'Token refresh requested');
+
       const refreshEntry = store.consumeMcpRefreshToken(refreshToken);
       if (!refreshEntry) {
+        logger.warn(
+          { clientId },
+          'Refresh token not found in store (unknown or expired)'
+        );
         return c.json(
           oauthError('invalid_grant', 'Invalid or expired refresh token'),
           400
@@ -447,6 +478,10 @@ export function createOAuthRoutes(
       }
 
       if (refreshEntry.clientId !== clientId) {
+        logger.warn(
+          { clientId, issuedTo: refreshEntry.clientId },
+          'Refresh token client mismatch'
+        );
         return c.json(
           oauthError(
             'invalid_grant',
@@ -464,11 +499,12 @@ export function createOAuthRoutes(
 
         const mcpAccessToken = randomBytes(32).toString('hex');
         const mcpRefreshToken = randomBytes(32).toString('hex');
+        const expiresInSec = normalizeExpiresIn(tokens.expires_in);
 
         store.storeMcpToken(mcpAccessToken, {
           backlogAccessToken: tokens.access_token,
           clientId,
-          expiresAt: Date.now() + tokens.expires_in * 1000,
+          expiresAt: Date.now() + expiresInSec * 1000,
         });
         store.storeMcpRefreshToken(mcpRefreshToken, {
           backlogRefreshToken: tokens.refresh_token,
@@ -476,10 +512,15 @@ export function createOAuthRoutes(
           expiresAt: Date.now() + REFRESH_TOKEN_TTL_MS,
         });
 
+        logger.info(
+          { clientId, rawExpiresIn: tokens.expires_in, expiresInSec },
+          'Backlog token refresh succeeded; issued new MCP access token'
+        );
+
         return c.json({
           access_token: mcpAccessToken,
           token_type: 'bearer',
-          expires_in: tokens.expires_in,
+          expires_in: expiresInSec,
           refresh_token: mcpRefreshToken,
         });
       } catch (err) {
